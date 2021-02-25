@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-import sys 
+import sys
 import os
 import django_heroku
+from decouple import config
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,8 +33,8 @@ def find_or_create_secret_key():
     Otherwise, generate a new secret key, save it in secret_key.py, and return the key.
     """
     SECRET_KEY_DIR = os.path.dirname(__file__)
-    SECRET_KEY_FILEPATH = os.path.join(SECRET_KEY_DIR, 'secret_key.py') 
-    sys.path.insert(1,SECRET_KEY_DIR) 
+    SECRET_KEY_FILEPATH = os.path.join(SECRET_KEY_DIR, 'secret_key.py')
+    sys.path.insert(1, SECRET_KEY_DIR)
 
     if os.path.isfile(SECRET_KEY_FILEPATH):
         from secret_key import SECRET_KEY
@@ -43,9 +44,11 @@ def find_or_create_secret_key():
         chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&amp;*(-_=+)'
         new_key = get_random_string(50, chars)
         with open(SECRET_KEY_FILEPATH, 'w') as f:
-            f.write("# Django secret key\n# Do NOT check this into version control.\n\nSECRET_KEY = '%s'\n" % new_key)
+            f.write(
+                "# Django secret key\n# Do NOT check this into version control.\n\nSECRET_KEY = '%s'\n" % new_key)
         from secret_key import SECRET_KEY
         return SECRET_KEY
+
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = find_or_create_secret_key()
@@ -76,6 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'clones.urls'
@@ -148,5 +152,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 django_heroku.settings(locals())
